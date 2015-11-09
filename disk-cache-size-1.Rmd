@@ -1,0 +1,75 @@
+---
+title: "Disk Cache Size Needed to Support Reads: A Study of the Amount of Time Between File Creation and File Read"
+author: "(intended audience is MSSG)"
+date: "November 9, 2015"
+output: html_document
+---
+# Introduction
+In an effort to help us estimate the amount of HPSS disk cache needed to support reads, we've calculated metrics that provide information about the amount of time between file creations and file reads. For example, if 90% of files are read within one month of their creation, a disk cache big enough to hold one month's worth of data (writes and reads) could handle approximately 90% of the reads (the remaining 10% of reads would need to be handled by tape drives); in this situation, it might be highly worthwhile to size the cache to hold a month's worth of activity. In contrast, if 10% of files are read within one year of being written, a disk cache big enough to hold one year's worth of data could handle approximately 10% of the reads (the remaining 90% would need to be handled by tape drives); given the relative cost of disk drives and tape drives, it might be better to spend more money on tape drives rather than buying enough disk to hold a year's worth of activity. 
+
+# Calculations
+To help us understand this tradeoff, we obtained a script from NERSC (that originally came from IBM) that queries the HPSS DB2 database and obtains information about the number of files read within different time intervals of their creation. Specifically, for each file that was created in the 5 year time period 08Jun2010 to 08Jun2015 *and that has been read in that same time period*, the script: 
+
+* queries and counts the number of such files whose time between creation and last read time is greater than 0 weeks and less than or equal to 1 week
+* queries and counts the number of such files whose time between creation and last read time is greater than 1 week and less than or equal to 4 weeks
+* queries and counts the number of such files whose time between creation and last read time is greater than 4 weeks and less than or equal to 8 weeks
+* queries and counts the number of such files whose time between creation and last read time is greater than 8 weeks and less than or equal to 12 weeks
+* queries and counts the number of such files whose time between creation and last read time is greater than 12 weeks and less than or equal to 52 weeks
+* queries and counts the number of such files whose time between creation and last read time is greater than 52 weeks and less than or equal to 260 weeks (5 years)
+
+Cumulative values and percents are then created for each of the bins described above.   
+
+Note that this metric does not take into account file rereads; it only calculates the time between creation and *last* read. For example, if a file was created 3 years ago and read every day, the value of this metric for that file would be 3 years (time of creation minus time of last read) and not the time between subsequent reads (1 day). This limitation has the effect of inflating the length of time needed to capture a given percent of the reads since, as in the example above, a cache big enough to hold 1 day's worth of activity would be able to service the read, yet the metric would project that the cache would need to hold 3 years worth of activity. However, most files are not reread so the impact of this limitation is likely small. Some plots that illustrate the small percent of rereads appear later in this report.
+
+# Results
+## Cumulative Percent of Files Read
+The two plots below show the cumulative percent of files read as a function of the time between file creation and read for the dataset described above. The first plot has an x range of 1 week to 260 weeks (the full five year period). In order to highlight the details of the data over a shorter time period, the second plot has an x range of 1 week to 52 weeks.
+
+
+
+```{r, echo=FALSE}
+#
+# The DB2 database was queried to determine the number of files that had
+# interaccess times (time between last read and creation) for six bins;
+# the "weeks" variable, below, contains the bin definitions in weeks. 
+#
+weeks     <- c(1, 4, 8, 12, 52, 260)
+
+#
+# The non-cumulative number of files in each bin.
+#
+filesRead <- c(5934064, 1565505, 1082212, 948398, 4924518, 2767200)
+
+#
+# Calculate the cumulative number of files and percent in each bin.
+#
+cumFilesRead    <- vector("integer")
+cumFilesRead[1] <- filesRead[1]
+for (i in 2:length(filesRead)) {
+        cumFilesRead[i] <- cumFilesRead[i - 1] + filesRead[i]
+}
+
+cumPercRead <- cumFilesRead/cumFilesRead[length(cumFilesRead)]
+
+#
+# Create plots.
+#
+#par(mfrow = c(1, 2))
+plot(weeks, cumPercRead, xlim=c(1, 260), ylim=c(0., 1.), type="l", ylab="cumulative percent read", xlab="weeks between creation and last read", main="Cumulative Percent of Files Read by Interval between Creation and\nLast Read")
+plot(weeks, cumPercRead, xlim=c(1, 52), ylim=c(0., 1.), type="l", ylab="cumulative percent read", xlab="weeks between creation and last read", main="Cumulative Percent of Files Read by Interval between Creation and\nLast Read")
+#plot(weeks, cumPercRead, xlim=c(1, 52), ylim=c(0., 1.), log="x", type="l", ylab="cumulative percent read", xlab="weeks between creation and last read", main="Cumulative Percent of Files Read by Interval between Creation and\nLast Read")
+```
+With our disk cache size of ~500 TB, we can hold approximately 5 days worth of data and the disk cache handles approximately 35% of the reads. To handle 50% of the reads, we'd need to a cache big enough to hold approximately 8 weeks of data (about 8 times as much as we currently have). The plots also show diminishing returns as the cache size increases.
+
+##File Reread Distributions
+To understand the possible impact of ignoring file rereads, we've queried the read count for files that were created between 08Jun2010 and 08Jun2015 and that had at least one read. Below is a plot of the frequency distribution for the read count.
+
+```{r, cache=TRUE, echo=FALSE}
+readCounts <- read.csv("./db2-read-count-prev-5-years-1-out.txt")
+counts <- readCounts[readCounts$count >= 1,]
+```
+```{r, cache=TRUE, echo=FALSE}
+hist(counts, xlim=c(0, 10), breaks=c(-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 200000), main="Distribution of File Read Counts Greater than Zero\n for Files Written between 08Jun2010 and 08Jun2015", xlab="read count", ylim=c(0., 1.))
+```
+
+
