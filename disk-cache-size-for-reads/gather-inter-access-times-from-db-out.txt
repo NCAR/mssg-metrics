@@ -1,0 +1,64 @@
+
+   Database Connection Information
+
+ Database server        = DB2/LINUXX8664 9.7.9
+ SQL authorization ID   = HPSSDB
+ Local database alias   = HSUBSYS1
+
+
+TOTAL_FILES TOTAL_DATA          
+----------- --------------------
+  153364666    38272070105968856
+
+  1 record(s) selected.
+
+
+FILES_NEVER_RECALLED DATA_NEVER_RECALLED 
+-------------------- --------------------
+           136142769    28821183808405844
+
+  1 record(s) selected.
+
+
+FILE_COUNT  RECALLEDDATA_IMMEDIATELY_TO_1WEEK
+----------- ---------------------------------
+    5934064                  1592554545106576
+
+  1 record(s) selected.
+
+
+FILE_COUNT  RECALLEDDATA_1WEEK_TO_30DAYS
+----------- ----------------------------
+    1565505              856341517761061
+
+  1 record(s) selected.
+
+
+FILE_COUNT  RECALLEDDATA_30DAYS_TO_60DAYS
+----------- -----------------------------
+    1082212               733261577324243
+
+  1 record(s) selected.
+
+
+FILE_COUNT  RECALLEDDATA_60DAYS_TO_90DAYS
+----------- -----------------------------
+     948398               526609652093967
+
+  1 record(s) selected.
+
+
+FILE_COUNT  RECALLEDDATA_90DAYS_TO_1YEAR
+----------- ----------------------------
+    4924518             3257086747936606
+
+  1 record(s) selected.
+
+
+FILE_COUNT  RECALLEDDATA_OVER_1YEAR
+----------- -----------------------
+    2767200        2485032257340559
+
+  1 record(s) selected.
+
+DB20000I  The TERMINATE command completed successfully.
