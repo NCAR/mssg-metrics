@@ -69,7 +69,7 @@ readCounts <- read.csv("./db2-read-count-prev-5-years-1-out.txt")
 counts <- readCounts[readCounts$count >= 1,]
 ```
 ```{r, cache=TRUE, echo=FALSE}
-hist(counts, xlim=c(0, 10), breaks=c(-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 200000), main="Distribution of File Read Counts Greater than Zero\n for Files Written between 08Jun2010 and 08Jun2015", xlab="read count", ylim=c(0., 1.))
+hist(counts, xlim=c(0, 10), breaks=c(-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 200000), main="Distribution of File Read Counts Greater than Zero\n for Files Written between 08Jun2010 and 08Jun2015", xlab="read count", ylim=c(0., 1.), col="blue")
 ```
 
 
