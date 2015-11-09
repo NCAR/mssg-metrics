@@ -3,9 +3,9 @@
 
 - query to obtain read count distribution
 
-db2 "select bfattr_read_count from hpss.bitfile for read only with ur"
+	db2 "select bfattr_read_count from hpss.bitfile for read only with ur"
 
 - query to obtain read count distribution for files created within the
   past 5 years of the backup snapshot
 
-db2 "select bfattr_read_count from hpss.bitfile where bfattr_create_time > 1275976800 for read only with ur"
+	db2 "select bfattr_read_count from hpss.bitfile where bfattr_create_time > 1275976800 for read only with ur"
