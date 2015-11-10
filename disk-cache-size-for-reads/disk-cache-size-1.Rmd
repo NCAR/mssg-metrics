@@ -1,11 +1,14 @@
 ---
-title: "Disk Cache Size Needed to Support Reads: A Study of the Amount of Time Between File Creation and File Read"
+title: 'Disk Cache Size Needed to Support Reads: A Study of the Amount of Time Between
+  File Creation and File Read'
 author: "(intended audience is MSSG)"
 date: "November 9, 2015"
-output: html_document
+output: pdf_document
 ---
 # Introduction
-In an effort to help us estimate the amount of HPSS disk cache needed to support reads, we've calculated metrics that provide information about the amount of time between file creations and file reads. For example, if 90% of files are read within one month of their creation, a disk cache big enough to hold one month's worth of data (writes and reads) could handle approximately 90% of the reads (the remaining 10% of reads would need to be handled by tape drives); in this situation, it might be highly worthwhile to size the cache to hold a month's worth of activity. In contrast, if 10% of files are read within one year of being written, a disk cache big enough to hold one year's worth of data could handle approximately 10% of the reads (the remaining 90% would need to be handled by tape drives); given the relative cost of disk drives and tape drives, it might be better to spend more money on tape drives rather than buying enough disk to hold a year's worth of activity. 
+The HPSS disk cache plays an important role in servicing user writes and reads. For writes, it provides a buffer to handle incoming data so that it can be efficiently streamed to tape. The disk cache needs to be large enough to hold data long enough for it to be aggregated and streamed to tape, and spikes in the amount of data written from day to day need to be taken into account. For reads, the cache can be useful in reducing the workload on the tape drive subsystem. Although GLADE is handling many reads that otherwise probably would be directed at HPSS, HPSS still handles many reads. 
+
+In an effort to help us estimate the potential benefits of a larger HPSS disk cache for reads, we've calculated metrics that provide information about the amount of time between file creations and file reads. For example, if 90% of files are read within one month of their creation, a disk cache big enough to hold one month's worth of data (writes and reads) could handle approximately 90% of the reads (the remaining 10% of reads would need to be handled by tape drives); in this situation, it might be worthwhile to size the cache to hold a month's worth of activity. In contrast, if 10% of files are read within one year of being written, a disk cache big enough to hold one year's worth of data could handle approximately 10% of the reads (the remaining 90% would need to be handled by tape drives); given the relative cost of disk drives and tape drives, it might be better to spend more money on tape drives rather than buying enough disk to hold a year's worth of activity. 
 
 # Calculations
 To help us understand this tradeoff, we obtained a script from NERSC (that originally came from IBM) that queries the HPSS DB2 database and obtains information about the number of files read within different time intervals of their creation. Specifically, for each file that was created in the 5 year time period 08Jun2010 to 08Jun2015 *and that has been read in that same time period*, the script: 
@@ -19,13 +22,13 @@ To help us understand this tradeoff, we obtained a script from NERSC (that origi
 
 Cumulative values and percents are then created for each of the bins described above.   
 
-Note that this metric does not take into account file rereads; it only calculates the time between creation and *last* read. For example, if a file was created 3 years ago and read every day, the value of this metric for that file would be 3 years (time of creation minus time of last read) and not the time between subsequent reads (1 day). This limitation has the effect of inflating the length of time needed to capture a given percent of the reads since, as in the example above, a cache big enough to hold 1 day's worth of activity would be able to service the read, yet the metric would project that the cache would need to hold 3 years worth of activity. However, most files are not reread so the impact of this limitation is likely small. Some plots that illustrate the small percent of rereads appear later in this report.
+Note that this metric does not take into account file rereads; it only calculates the time between creation and *last* read. For example, if a file was created 3 years ago and read every day, the value of this metric for that file would be 3 years (time of creation minus time of last read) and not the time between subsequent reads (1 day). This limitation has the effect of inflating the amount of time needed to capture a given percent of the reads. In the example above, a cache big enough to hold 1 day's worth of activity would be able to service the read, yet the metric would project that the cache would need to hold 3 years worth of activity to service the read. However, most files are not reread so the impact of this limitation is unlikely to be large. A plot that illustrates the small percent of rereads appears later in this report.
 
 # Results
-## Cumulative Percent of Files Read
-The two plots below show the cumulative percent of files read as a function of the time between file creation and read for the dataset described above. The first plot has an x range of 1 week to 260 weeks (the full five year period). In order to highlight the details of the data over a shorter time period, the second plot has an x range of 1 week to 52 weeks.
-
-
+## Cumulative Fraction of Files Read
+The two plots below show the cumulative fraction of files read as a function of the time between file creation and read for the dataset described above. The first plot has an x range of 1 week to 260 weeks (the full five year period). In order to highlight the details of the data over a shorter time period, the second plot has an x range of 1 week to 52 weeks.   
+   
+\vspace{1cm}
 
 ```{r, echo=FALSE}
 #
@@ -41,7 +44,7 @@ weeks     <- c(1, 4, 8, 12, 52, 260)
 filesRead <- c(5934064, 1565505, 1082212, 948398, 4924518, 2767200)
 
 #
-# Calculate the cumulative number of files and percent in each bin.
+# Calculate the cumulative number of files and fraction in each bin.
 #
 cumFilesRead    <- vector("integer")
 cumFilesRead[1] <- filesRead[1]
@@ -49,17 +52,26 @@ for (i in 2:length(filesRead)) {
         cumFilesRead[i] <- cumFilesRead[i - 1] + filesRead[i]
 }
 
-cumPercRead <- cumFilesRead/cumFilesRead[length(cumFilesRead)]
+cumFracRead <- cumFilesRead/cumFilesRead[length(cumFilesRead)]
 
 #
 # Create plots.
 #
 #par(mfrow = c(1, 2))
-plot(weeks, cumPercRead, xlim=c(1, 260), ylim=c(0., 1.), type="l", ylab="cumulative percent read", xlab="weeks between creation and last read", main="Cumulative Percent of Files Read by Interval between Creation and\nLast Read")
-plot(weeks, cumPercRead, xlim=c(1, 52), ylim=c(0., 1.), type="l", ylab="cumulative percent read", xlab="weeks between creation and last read", main="Cumulative Percent of Files Read by Interval between Creation and\nLast Read")
-#plot(weeks, cumPercRead, xlim=c(1, 52), ylim=c(0., 1.), log="x", type="l", ylab="cumulative percent read", xlab="weeks between creation and last read", main="Cumulative Percent of Files Read by Interval between Creation and\nLast Read")
+plot(weeks, cumFracRead, xlim=c(1, 260), ylim=c(0., 1.), type="l", ylab="cumulative fraction read", xlab="weeks between creation and last read", main="Cumulative Fraction of Files Read by Interval between Creation\n and Last Read") 
 ```
-With our disk cache size of ~500 TB, we can hold approximately 5 days worth of data and the disk cache handles approximately 35% of the reads. To handle 50% of the reads, we'd need to a cache big enough to hold approximately 8 weeks of data (about 8 times as much as we currently have). The plots also show diminishing returns as the cache size increases.
+  
+    
+  
+  
+```{r, eval=TRUE, echo=FALSE}
+plot(weeks, cumFracRead, xlim=c(1, 52), ylim=c(0., 1.), type="l", ylab="cumulative fraction read", xlab="weeks between creation and last read", main="Cumulative Fraction of Files Read by Interval between Creation\n and Last Read")
+#plot(weeks, cumPercRead, xlim=c(1, 52), ylim=c(0., 1.), log="x", type="l", ylab="cumulative percent read", xlab="weeks between creation and last read", main="Cumulative Percent of Files Read by Interval between Creation\n and Last Read")
+```
+
+\vspace{1cm}
+
+With our disk cache size of ~500 TB, we can hold approximately 5 days worth of data and the disk cache handles approximately 35% of the reads. To handle 50% of the reads, the data in the plots above indicate that we'd need a cache big enough to hold approximately 8 weeks of data (about 8 times as much as we currently have). The plots also show diminishing returns as the cache size increases.
 
 ##File Reread Distributions
 To understand the possible impact of ignoring file rereads, we've queried the read count for files that were created between 08Jun2010 and 08Jun2015 and that had at least one read. Below is a plot of the frequency distribution for the read count.
@@ -71,5 +83,20 @@ counts <- readCounts[readCounts$count >= 1,]
 ```{r, cache=TRUE, echo=FALSE}
 hist(counts, xlim=c(0, 10), breaks=c(-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 200000), main="Distribution of File Read Counts Greater than Zero\n for Files Written between 08Jun2010 and 08Jun2015", xlab="read count", ylim=c(0., 1.), col="blue")
 ```
+
+The plot illustrates that the vast majority of files that are read are only read one time (~72%), suggesting that ignoring file rereads in estimating the size of the cache needed to handle a specified percent of reads (as described in the Calculations section) might be an acceptable first order approximation.
+
+# Cost-Benefit Analysis
+One potential benefit of a larger disk cache is that an increase in reads from disk could lead to a decrease in the number of tape drives that we need to buy. However, increasing the size of the disk cache would require us to spend more money on disk. Using a very simple example of a model, we can attempt to estimate the economic tradeoff.  The assumptions used in this model tend to favor a larger disk cache, but even with those assumptions, a larger disk cache does not appear to be cost effective for reads. The assumptions used here are only one possibility, so please feel free to plug in your own assumptions and calculate the cost and benefit using those.
+
+Our current read hit ratio is approximately 35%, which means that 65% of reads are handled by tape drives. The data in the plots above indicate that to increase the hit ratio to 50% would require a cache large enough to hold about 8 weeks worth of data or ~8 times more than our current cache size. Increasing the hit ratio from 35% to 50% is a decrease in the percent being handled by tape drives from 65% to 50%, or a decrease of 15 percentage points. A decrease of 15 percentage points corresponds to a 23% decrease (.15/.65 = .23).  So, to obtain a 23% decrease in the read workload handled by the tape drives would require, approximately, an 800% increase in the size of our disk cache, which corresponds to an additional 3.5 PB of disk.
+
+Suppose we used the simple assumption that a 23% decrease in read workload for the drives translated directly into a need for 23% fewer tape drives (an assumption that is on the high side).  We currently have 92 C and D drives. Although not all of those are busy handling in reads (and the C's aren't very busy at all), let's assume that 23% of all of those drives are not needed (an assumption that's also the high side). With that assumption, we can calculate the number of drives saved as 23% of 92, or 21. So, with these assumptions, we'd need 21 fewer drives. 
+
+Based on a recent quote, 1 PB of disk costs approximately $150,000. Comparing costs and benefits, 3.5 PB of additional disk would cost us approximately $525,000 ($150,000 * 3.5) while 20 fewer tape drives would save us $420,000 (assuming $20,000 per tape drive), resulting in a net increase in expenses of ~$105,000.
+
+Although there may be other reasons to consider increasing the size of the disk cache (a bigger buffer for writes, faster performance for users), from a purely economic perspective, the increased expenses for disk would likely not be offset by the decrease in expenses for tape drives. The outcome could have been different if our workload was different (e.g., a larger fraction of reads handled by only a slightly larger disk cache) or if the relative costs of disk and tape were different. Over time, those factors could change, which could mean that it might make more economic sense at some point to increase the size of the cache for reads.
+
+
 
 
