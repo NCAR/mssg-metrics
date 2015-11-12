@@ -1,6 +1,6 @@
 ---
 title: 'Disk Cache Size Needed to Support Reads: A Study of the Amount of Time Between
-  File Creation and File Read'
+  File Creations and File Reads'
 author: "(intended audience is MSSG)"
 date: "November 11, 2015"
 output: pdf_document

@@ -1,0 +1,15 @@
+
+- restore DB2 backup image from 08Jun2015
+
+- as hpssdb, run "gather-inter-access-times-from-db.sh"
+
+- the counts from the "gather-inter-access-times-from-db.sh" script were manually added to the  "disk-cache-size-1.Rmd" script
+
+- as hpssdb, run the following query to obtain the read counts for files created in the past five years:
+
+	db2 "select bfattr_read_count from hpss.bitfile where bfattr_create_time > 1275976800 for read only with ur"
+
+- run the "disk-cache-size-1.Rmd" script via Rstudio to generate the report
+
+
+
