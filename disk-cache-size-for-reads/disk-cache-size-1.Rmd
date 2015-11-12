@@ -59,6 +59,7 @@ cumFracRead <- cumFilesRead/cumFilesRead[length(cumFilesRead)]
 #
 #par(mfrow = c(1, 2))
 plot(weeks, cumFracRead, xlim=c(1, 260), ylim=c(0., 1.), type="l", ylab="cumulative fraction read", xlab="weeks between creation and last read", main="Cumulative Fraction of Files Read by Interval between Creation\n and Last Read") 
+grid()
 ```
   
     
@@ -66,6 +67,7 @@ plot(weeks, cumFracRead, xlim=c(1, 260), ylim=c(0., 1.), type="l", ylab="cumulat
   
 ```{r, eval=TRUE, echo=FALSE}
 plot(weeks, cumFracRead, xlim=c(1, 52), ylim=c(0., 1.), type="l", ylab="cumulative fraction read", xlab="weeks between creation and last read", main="Cumulative Fraction of Files Read by Interval between Creation\n and Last Read")
+grid()
 #plot(weeks, cumPercRead, xlim=c(1, 52), ylim=c(0., 1.), log="x", type="l", ylab="cumulative percent read", xlab="weeks between creation and last read", main="Cumulative Percent of Files Read by Interval between Creation\n and Last Read")
 ```
 
@@ -93,7 +95,7 @@ Our current read hit ratio is approximately 35%, which means that 65% of reads a
 
 Suppose we used the simple assumption that a 23% decrease in read workload for the drives translated directly into a need for 23% fewer tape drives (an assumption that is on the high side).  We currently have 92 C and D drives. Although not all of those are busy handling reads (and the C's aren't busy handling reads or writes), let's assume that 23% of all of those drives are not needed (an assumption that's also on the high side). With that assumption, we can calculate the number of drives saved as 23% of 92, or 21. So, with these assumptions, we'd need 21 fewer drives. 
 
-Based on a recent quote, 1 PB of disk costs approximately $150,000. Comparing costs and benefits, 3.5 PB of additional disk would cost us approximately $525,000 ($150,000 * 3.5) while 21 fewer tape drives would save us $420,000 (assuming $20,000 per tape drive), resulting in a net increase in expenses of ~$105,000.
+Based on a recent quote, 1 PB of disk costs approximately $150,000. Comparing costs and benefits, 3.5 PB of additional disk would cost us approximately $525,000 ($150,000 * 3.5) while 21 fewer tape drives would save us $420,000 (assuming $20,000 per tape drive), resulting in a net increase in expenses of ~$105,000. Also, we performed this calculation for a few other potential cache sizes (e.g., 8 weeks, etc.) and those showed a net increase in cost as well.
 
 Although there may be other reasons to consider increasing the size of the disk cache (a bigger buffer for writes, faster performance for users), from a purely economic perspective, the increased expenses for disk would likely not be offset by the decrease in expenses for tape drives. The outcome could have been different if our workload was different (e.g., a larger fraction of reads handled by only a slightly larger disk cache) or if the relative costs of disk and tape were different. Over time, those factors could change, which could mean that, at some point, increasing the size of the cache to handle reads could be a compelling option.
 
