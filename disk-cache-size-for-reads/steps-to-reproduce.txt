@@ -9,6 +9,9 @@
 
 	db2 "select bfattr_read_count from hpss.bitfile where bfattr_create_time > 1275976800 for read only with ur"
 
+- cleanup this output file a little bit to make it easier to parse by R (e.g., remove column header, trailing info and add
+  a column name)
+
 - run the "disk-cache-size-1.Rmd" script via Rstudio to generate the report
 
 
